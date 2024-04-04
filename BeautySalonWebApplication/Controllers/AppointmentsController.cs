@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BeautySalonWebApplication.Controllers
 {
@@ -23,6 +24,19 @@ namespace BeautySalonWebApplication.Controllers
         public async Task<IActionResult> Index()
         {
             return View(await _context.Appointment.ToListAsync());
+        }
+
+        // GET: Appointments/ShowSearchForm
+        public async Task<IActionResult> ShowSearchForm()
+        {
+            return View();
+        }
+
+        // POST: Appointments/ShowSearchResults
+        public async Task<IActionResult> ShowSearchResults(String SearchName)
+        {
+            return View("Index",await _context.Appointment.Where(a =>  a.Name.Equals
+            (SearchName)).ToListAsync());
         }
 
         // GET: Appointments/Details/5
@@ -44,6 +58,7 @@ namespace BeautySalonWebApplication.Controllers
         }
 
         // GET: Appointments/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
