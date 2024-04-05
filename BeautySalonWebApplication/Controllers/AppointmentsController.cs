@@ -8,18 +8,52 @@ using Microsoft.EntityFrameworkCore;
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
 using Microsoft.AspNetCore.Authorization;
+using BeautySalonWebApplication.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace BeautySalonWebApplication.Controllers
 {
     public class AppointmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public AppointmentsController(ApplicationDbContext context)
+
+        public AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager)
         {
             _context = context;
-        }
+            _emailService = emailService;
+            _userManager = userManager;
 
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    // Generate confirmation link
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
+
+                    // Send confirmation email
+                    await _emailService.SendConfirmationEmailAsync(user.Email, callbackUrl);
+
+                    // Redirect to registration confirmation page
+                    return RedirectToAction("RegistrationConfirmation", "Account");
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            return View(model);
+        }
         // GET: Appointments
         public async Task<IActionResult> Index()
         {
