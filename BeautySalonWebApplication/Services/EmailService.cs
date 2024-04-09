@@ -18,7 +18,7 @@ namespace BeautySalonWebApplication.Services
             _logger = logger;
         }
 
-        public async Task SendEmailAsync(string email, string subject, string confirmationLink)
+        public async Task SendConfirmationEmailAsync(string email, string subject, string confirmationLink)
         {
             try
             {
