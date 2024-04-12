@@ -1,20 +1,20 @@
 ﻿using BeautySalonWebApplication.Configuration;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Mail;
+using System;
 using System.Threading.Tasks;
 
 namespace BeautySalonWebApplication.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly SmtpSettings _smtpSettings;
+        private readonly SmtpEmailSender _smtpEmailSender;
         private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IOptions<SmtpSettings> smtpSettings, ILogger<EmailService> logger)
+        public EmailService(SmtpEmailSender smtpEmailSender, ILogger<EmailService> logger)
         {
-            _smtpSettings = smtpSettings.Value;
+            _smtpEmailSender = smtpEmailSender;
             _logger = logger;
         }
 
@@ -22,24 +22,7 @@ namespace BeautySalonWebApplication.Services
         {
             try
             {
-                using (var client = new SmtpClient(_smtpSettings.Server, _smtpSettings.Port))
-                {
-                    client.EnableSsl = _smtpSettings.EnableSsl;
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
-
-                    var mailMessage = new MailMessage
-                    {
-                        From = new MailAddress(_smtpSettings.SenderEmail),
-                        Subject = subject,
-                        Body = $"Please confirm your email address by clicking the following link: <a href='{confirmationLink}'>Confirm Email</a>",
-                        IsBodyHtml = true
-                    };
-
-                    mailMessage.To.Add(email);
-
-                    await client.SendMailAsync(mailMessage);
-                }
+                await _smtpEmailSender.SendEmailAsync(email, subject, $"Please confirm your email address by clicking the following link: <a href='{confirmationLink}'>Confirm Email</a>");
             }
             catch (Exception ex)
             {

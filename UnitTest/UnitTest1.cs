@@ -23,13 +23,29 @@ namespace BeautySalonWebApplication.Tests
         {
             _output.WriteLine("Starting the test...");
             // Arrange: Create a mock instance of UserManager<ApplicationUser>
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             var mockUserManager = new Mock<UserManager<ApplicationUser>>(
                 Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
-            var mockDbContext = Mock.Of<ApplicationDbContext>();
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+            var mockDbContext = new Mock<ApplicationDbContext>();
 
             var mockEmailService = Mock.Of<IEmailService>();
 
-            var controller = new AppointmentsController(mockDbContext, mockEmailService, mockUserManager.Object);
+            var controller = new AppointmentsController(mockDbContext.Object, mockEmailService, mockUserManager.Object);
 
 
             var viewModel = new RegisterViewModel

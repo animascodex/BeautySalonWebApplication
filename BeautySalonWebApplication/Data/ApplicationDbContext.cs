@@ -11,6 +11,8 @@ namespace BeautySalonWebApplication.Data
             : base(options)
         {
         }
+
+        public override DbSet<ApplicationUser> Users {  get; set; }
         public DbSet<BeautySalonWebApplication.Models.Appointment> Appointment { get; set; } = default!;
     }
 }

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeautySalonWebApplication", "BeautySalonWebApplication\BeautySalonWebApplication.csproj", "{BDC4BBFE-6A53-4E08-AE68-5E7C68CC94EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{351F4F76-2D58-4EE7-B8CD-D5C68A375328}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest", "UnitTest\UnitTest.csproj", "{351F4F76-2D58-4EE7-B8CD-D5C68A375328}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

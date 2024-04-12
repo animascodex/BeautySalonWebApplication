@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BeautySalonWebApplication.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240408034919_AddApplicationUserDbSet")]
-    partial class AddApplicationUserDbSet
+    [Migration("20240412023720_CreateUserModel")]
+    partial class CreateUserModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
