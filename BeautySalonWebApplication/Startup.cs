@@ -18,11 +18,12 @@ namespace BeautySalonWebApplication
     public class Startup
     {
         private readonly IConfiguration _configuration;
-        public Startup(IConfiguration configuration)
+        private readonly ILogger<Startup> _logger;
+        public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
-        public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
             // Add Database context
@@ -37,21 +38,19 @@ namespace BeautySalonWebApplication
                 // Add other logging providers as needed
             });
 
-            // Register EmailService as a transient service
-            services.AddTransient<IEmailService, EmailService>();
-            services.Configure<SmtpSettings>(Configuration.GetSection("SmtpSettings"));
-
-            // Add ASP.NET Core Identity email sender
-            services.AddTransient<IEmailSender, SmtpEmailSender>();
-
             // Other service registrations...
             services.AddDefaultIdentity<ApplicationUser>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultUI()
             .AddDefaultTokenProviders();
             services.AddAuthorization();
+            // Register EmailService as a transient service
+            services.Configure<SmtpSettings>(_configuration.GetSection("SmtpSettings"));
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<SmtpEmailSender>();
 
             services.AddControllersWithViews();
             services.AddRazorPages(); // Add this line to configure Razor Pages services
@@ -77,7 +76,6 @@ namespace BeautySalonWebApplication
 
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

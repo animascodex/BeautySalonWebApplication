@@ -1,10 +1,10 @@
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity;
+using BeautySalonWebApplication.Services;
+using BeautySalonWebApplication.Configuration;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,10 +20,17 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     // Configure identity options if needed
     options.SignIn.RequireConfirmedAccount = true;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>();
-
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultUI();
+builder.Services.AddTransient<IEmailService, EmailService>();
+// Configure SmtpSettings options
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+// Add SmtpEmailSender service
+builder.Services.AddTransient<SmtpEmailSender>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+
 
 var app = builder.Build();
 
@@ -44,6 +51,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

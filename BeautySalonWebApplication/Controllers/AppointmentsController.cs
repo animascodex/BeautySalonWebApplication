@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
 using BeautySalonWebApplication.Services;
+using BeautySalonWebApplication.Configuration;
+using Microsoft.Extensions.Options;
+
 
 
 namespace BeautySalonWebApplication.Controllers
@@ -18,24 +19,31 @@ namespace BeautySalonWebApplication.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly SmtpSettings _smtpSettings;
+        private readonly ILogger<AppointmentsController> _logger;
 
 
-        public AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager)
+
+        public AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager, IOptions<SmtpSettings> smtpSettings, ILogger<AppointmentsController> logger)
         {
             _context = context;
             _emailService = emailService;
             _userManager = userManager;
-
+            _smtpSettings = smtpSettings.Value;
+            _logger = logger;
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            _logger.LogInformation($"SMTP Host: {_smtpSettings.Host}");
+            _logger.LogInformation($"SMTP Port: {_smtpSettings.Port}");
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser 
-                { 
-                    UserName = model.Email, 
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName
@@ -47,11 +55,13 @@ namespace BeautySalonWebApplication.Controllers
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
 
-                    // Send confirmation email
-                    await _emailService.SendConfirmationEmailAsync(user.Email, "Confirm Your Email Address", callbackUrl);
-
+                    // Send confirmation email using EmailService
+                    await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", callbackUrl);
                     // Redirect to registration confirmation page
                     return RedirectToAction("RegistrationConfirmation", "Account");
+
+                    
+
                 }
                 foreach (var error in result.Errors)
                 {
@@ -60,8 +70,9 @@ namespace BeautySalonWebApplication.Controllers
             }
             return View(model);
         }
-        // GET: Appointments
-        public async Task<IActionResult> Index()
+
+// GET: Appointments
+public async Task<IActionResult> Index()
         {
             return View(await _context.Appointment.ToListAsync());
         }

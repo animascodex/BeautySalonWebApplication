@@ -8,6 +8,5 @@
         public string Password { get; set; }
         public string SenderEmail { get; set; }
         public bool EnableSsl {  get; set; }
-        public string From { get; set; }
     }
 }
