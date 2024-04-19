@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using BeautySalonWebApplication.Configuration;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
+using BeautySalonWebApplication.Models;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BeautySalonWebApplication.Services
 {
@@ -13,31 +16,30 @@ namespace BeautySalonWebApplication.Services
         private readonly SmtpSettings _smtpSettings;
         private readonly ILogger<SmtpEmailSender> _logger;
 
-        public SmtpEmailSender(IOptions<SmtpSettings> smtpSettings, ILogger<SmtpEmailSender> logger)
-        {
+		public SmtpEmailSender(IOptions<SmtpSettings> smtpSettings, ILogger<SmtpEmailSender> logger)
+		{
             _smtpSettings = smtpSettings.Value;
-            _logger = logger;
-        }
-
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
-        {
-            try
-            {
-                SmtpMail message = new SmtpMail("TryIt");
-                SmtpServer oServer = new SmtpServer(_smtpSettings.Host);
-
+            _logger = logger;			
+		}
+		
+		public async Task SendEmailAsync(string email, string subject, string template)
+		{
+			try
+			{
+				string htmlMessage = template;
+				// Resolve the Razor view
+				SmtpServer oServer = new SmtpServer(_smtpSettings.Host);
                 // Set SMTP port
                 oServer.Port = _smtpSettings.Port;
-
                 // Set SSL/TLS connection
                 oServer.ConnectType = SmtpConnectType.ConnectSSLAuto;
-
                 // Set user authentication
                 oServer.User = _smtpSettings.Username;
                 oServer.Password = _smtpSettings.Password;
-
-                // Set From, To, Subject and TextBody properties
-                message.From = _smtpSettings.SenderEmail;
+				_logger.LogInformation(_smtpSettings.Username, _smtpSettings.Password, _smtpSettings.SenderEmail, _smtpSettings.Port, _smtpSettings.Host);
+				SmtpMail message = new SmtpMail("TryIt");
+				// Set From, To, Subject and TextBody properties
+				message.From = _smtpSettings.SenderEmail;
                 message.To = email;
                 message.Subject = subject;
                 message.TextBody = htmlMessage;
@@ -56,72 +58,3 @@ namespace BeautySalonWebApplication.Services
         }
     }
 }
-
-
-
-
-/*using System.Net;
-using System.Net.Mail;
-using System.Threading.Tasks;
-using BeautySalonWebApplication.Configuration;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
-
-namespace BeautySalonWebApplication.Services
-{
-    public class SmtpEmailSender : IEmailSender
-    {
-        private readonly SmtpSettings _smtpSettings;
-        private readonly ILogger<SmtpEmailSender> _logger;
-
-        public SmtpEmailSender(IOptions<SmtpSettings> smtpSettings, ILogger<SmtpEmailSender> logger)
-        {
-            _smtpSettings = smtpSettings.Value;
-            _logger = logger;
-        }
-
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
-        {
-
-            try
-            {
-                
-                using (var client = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
-                {
-                    // Log SMTP settings
-                    _logger.LogInformation("SMTP Settings - Host: {Host}, Port: {Port}, Username: {Username}, SenderEmail: {SenderEmail}",
-                       _smtpSettings.Host, _smtpSettings.Port, _smtpSettings.Username, _smtpSettings.SenderEmail);
-                    client.EnableSsl = _smtpSettings.EnableSsl;
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
-
-                    if (string.IsNullOrEmpty(email))
-                    {
-                        throw new ArgumentNullException(nameof(email));
-                    }
-
-                    var mailMessage = new MailMessage
-                    {
-                        From = new MailAddress(_smtpSettings.SenderEmail),
-                        Subject = subject,
-                        Body = htmlMessage,
-                        IsBodyHtml = true
-                    };
-
-                    mailMessage.To.Add(email);
-
-                    await client.SendMailAsync(mailMessage);
-
-                    _logger.LogInformation("Email sent successfully to: {Email}", email);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send email to: {Email}", email);
-                throw; // Rethrow the exception to propagate it upwards
-            }
-        }
-    }
-}
-*/

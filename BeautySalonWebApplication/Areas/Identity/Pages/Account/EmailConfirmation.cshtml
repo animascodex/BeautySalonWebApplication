@@ -1,4 +1,5 @@
-﻿@page
-@model BeautySalonWebApplication.Areas.Identity.Pages.Account.EmailConfirmationModel
-@{
-}
+﻿@model ConfirmationEmailViewModel
+
+<p>Dear @Model.FirstName,</p>
+<p>Thank you for registering with Beauty Salon Web Application. Please click the following link to confirm your email address:</p>
+<a href="@Url.Action("ConfirmEmail", "Account", new { area = "Identity", userId = Model.UserId, code = Model.ConfirmationCode }, Url.ActionContext.HttpContext.Request.Scheme)">Confirm Email</a>

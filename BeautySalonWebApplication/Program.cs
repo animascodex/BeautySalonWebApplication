@@ -27,6 +27,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 // Add SmtpEmailSender service
 builder.Services.AddTransient<SmtpEmailSender>();
+builder.Services.AddTransient<IViewRenderService, ViewRenderService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 

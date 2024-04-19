@@ -8,6 +8,6 @@ namespace BeautySalonWebApplication.Models
         // Add any additional properties or customizations here
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        // Add more properties as needed
-    }
+		// Add more properties as needed
+	}
 }

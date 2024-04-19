@@ -51,8 +51,9 @@ namespace BeautySalonWebApplication
             services.Configure<SmtpSettings>(_configuration.GetSection("SmtpSettings"));
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<SmtpEmailSender>();
+			services.AddTransient<IViewRenderService, ViewRenderService>();
 
-            services.AddControllersWithViews();
+			services.AddControllersWithViews();
             services.AddRazorPages(); // Add this line to configure Razor Pages services
         }
 

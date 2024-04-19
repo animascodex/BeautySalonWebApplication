@@ -56,7 +56,7 @@ namespace BeautySalonWebApplication.Controllers
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
 
                     // Send confirmation email using EmailService
-                    await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", callbackUrl);
+                    await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", callbackUrl, user.FirstName, user.Id, code);
                     // Redirect to registration confirmation page
                     return RedirectToAction("RegistrationConfirmation", "Account");
 

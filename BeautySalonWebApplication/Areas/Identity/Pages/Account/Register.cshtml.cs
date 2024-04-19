@@ -104,14 +104,14 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = user.Id, code = token},
-                        protocol: Request.Scheme);
+					var confirmationLink = Url.Page(
+						"/Account/ConfirmEmail",
+						pageHandler: null,
+						values: new { area = "Identity", userId = user.Id, code = token },
+						protocol: Request.Scheme);
 
-                    // Use _emailService to send confirmation email
-                    await _emailService.SendConfirmationEmailAsync(Input.Email, "Confirm your email", callbackUrl);
+					// Use _emailService to send confirmation email
+					await _emailService.SendConfirmationEmailAsync(Input.Email, "Confirm your email", confirmationLink, user.FirstName, user.Id, code);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
