@@ -53,10 +53,10 @@ namespace BeautySalonWebApplication.Controllers
                 {
                     // Generate confirmation link
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
 
                     // Send confirmation email using EmailService
-                    await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", callbackUrl, user.FirstName, user.Id, code);
+                    await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", confirmationLink, user.FirstName);
                     // Redirect to registration confirmation page
                     return RedirectToAction("RegistrationConfirmation", "Account");
 

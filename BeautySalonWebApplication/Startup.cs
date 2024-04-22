@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Net.Mail;
 
 
 
@@ -18,12 +18,15 @@ namespace BeautySalonWebApplication
     public class Startup
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<Startup> _logger;
-        public Startup(IConfiguration configuration, ILogger<Startup> logger)
+		private readonly SmtpSettings _smtpSettings;
+		private readonly ILogger<Startup> _logger;
+		private readonly IWebHostEnvironment _env;
+		public Startup(IConfiguration configuration, ILogger<Startup> logger, IWebHostEnvironment env)
         {
             _configuration = configuration;
             _logger = logger;
-        }
+			_env = env;
+		}
         public void ConfigureServices(IServiceCollection services)
         {
             // Add Database context
@@ -49,13 +52,27 @@ namespace BeautySalonWebApplication
             services.AddAuthorization();
             // Register EmailService as a transient service
             services.Configure<SmtpSettings>(_configuration.GetSection("SmtpSettings"));
-            services.AddTransient<IEmailService, EmailService>();
-            services.AddTransient<SmtpEmailSender>();
+			// Load sensitive settings from appsettings.secrets.json
+			var secretsConfig = new ConfigurationBuilder()
+				.SetBasePath(_env.ContentRootPath)
+				.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: true)
+				.Build();
+
+			services.Configure<SmtpSettings>(secretsConfig.GetSection("SmtpSettings"));
+			services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<ISmtpEmailSender, SmtpEmailSender>();
+			services.AddTransient<SmtpClient>();
 			services.AddTransient<IViewRenderService, ViewRenderService>();
 
 			services.AddControllersWithViews();
-            services.AddRazorPages(); // Add this line to configure Razor Pages services
-        }
+            services.AddRazorPages().AddRazorOptions(options =>
+			{
+				// Add additional search paths for views within the Areas
+				options.AreaViewLocationFormats.Add("/Areas/Identity/Pages/{1}/{0}.cshtml");
+				options.AreaViewLocationFormats.Add("/Areas/Identity/Pages/Shared/{0}.cshtml");
+			});
+            // Add this line to configure Razor Pages services
+		}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

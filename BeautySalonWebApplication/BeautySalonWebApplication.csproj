@@ -42,4 +42,10 @@
     <Folder Include="Views\EmailTemplates\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.secrets.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

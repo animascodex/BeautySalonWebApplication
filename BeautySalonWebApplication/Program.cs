@@ -1,10 +1,10 @@
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Identity;
 using BeautySalonWebApplication.Services;
 using BeautySalonWebApplication.Configuration;
+using System.Net.Mail;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,10 +24,12 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddDefaultUI();
 builder.Services.AddTransient<IEmailService, EmailService>();
 // Configure SmtpSettings options
+builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: true);
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 // Add SmtpEmailSender service
-builder.Services.AddTransient<SmtpEmailSender>();
+builder.Services.AddTransient<ISmtpEmailSender, SmtpEmailSender>();
 builder.Services.AddTransient<IViewRenderService, ViewRenderService>();
+builder.Services.AddTransient<SmtpClient>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 

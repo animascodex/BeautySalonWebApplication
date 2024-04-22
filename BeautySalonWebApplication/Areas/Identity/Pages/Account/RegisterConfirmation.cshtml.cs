@@ -65,7 +65,7 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
                     values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                     protocol: Request.Scheme);
                 // Send confirmation email using EmailService
-                await _emailService.SendConfirmationEmailAsync(user.Email, "Confirm Your Email Address", EmailConfirmationUrl, user.FirstName, userId, code);
+                await _emailService.SendConfirmationEmailAsync(user.Email, "Confirm Your Email Address", EmailConfirmationUrl, user.FirstName);
             }
 
             return Page();

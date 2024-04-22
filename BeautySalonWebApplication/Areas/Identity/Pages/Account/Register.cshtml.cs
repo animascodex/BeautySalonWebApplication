@@ -111,7 +111,7 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
 						protocol: Request.Scheme);
 
 					// Use _emailService to send confirmation email
-					await _emailService.SendConfirmationEmailAsync(Input.Email, "Confirm your email", confirmationLink, user.FirstName, user.Id, code);
+					await _emailService.SendConfirmationEmailAsync(Input.Email, "Confirm your email", confirmationLink, user.FirstName);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
