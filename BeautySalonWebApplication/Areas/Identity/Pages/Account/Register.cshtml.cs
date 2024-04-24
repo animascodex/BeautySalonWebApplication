@@ -9,42 +9,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Castle.Core.Smtp;
 using System.Text;
 
 
 namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
 {
-    public class RegisterModel : PageModel
+    public class RegisterModel(
+		UserManager<ApplicationUser> userManager,
+		SignInManager<ApplicationUser> signInManager,
+		IEmailService emailService) : PageModel
     {
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly IUserStore<ApplicationUser> _userStore;
-        private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailService _emailService;
+        private readonly IEmailService _emailService = emailService;
 
-
-        public RegisterModel(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            ILogger<RegisterModel> logger,
-            IEmailService emailService) // Inject your custom EmailService
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
-            _emailService = emailService; // Assign injected email service to local field
-
-            _logger.LogInformation("RegisterModel constructor initialized successfully.");
-            _logger.LogInformation($"UserManager: {_userManager.GetType().FullName}");
-            _logger.LogInformation($"SignInManager: {_signInManager.GetType().FullName}");
-            _logger.LogInformation($"EmailService: {_emailService.GetType().FullName}");
-        }
-
-
-        [BindProperty]
+		[BindProperty]
         public InputModel Input { get; set; }
 
         public string ReturnUrl { get; set; }
@@ -100,8 +80,6 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
-
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 					var confirmationLink = Url.Page(
@@ -115,7 +93,7 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
                     }
                     else
                     {

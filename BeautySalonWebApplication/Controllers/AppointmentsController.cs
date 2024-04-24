@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,31 +12,18 @@ using Microsoft.Extensions.Options;
 
 namespace BeautySalonWebApplication.Controllers
 {
-    public class AppointmentsController : Controller
+    public class AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager, IOptions<SmtpSettings> smtpSettings, ILogger<AppointmentsController> logger) : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IEmailService _emailService;
-        private readonly SmtpSettings _smtpSettings;
-        private readonly ILogger<AppointmentsController> _logger;
+        private readonly ApplicationDbContext _context = context;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly IEmailService _emailService = emailService;
+        private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
+        private readonly ILogger<AppointmentsController> _logger = logger;
 
-
-
-        public AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager, IOptions<SmtpSettings> smtpSettings, ILogger<AppointmentsController> logger)
-        {
-            _context = context;
-            _emailService = emailService;
-            _userManager = userManager;
-            _smtpSettings = smtpSettings.Value;
-            _logger = logger;
-        }
-
-        [HttpPost]
+		[HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            _logger.LogInformation($"SMTP Host: {_smtpSettings.Host}");
-            _logger.LogInformation($"SMTP Port: {_smtpSettings.Port}");
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser
@@ -55,8 +40,8 @@ namespace BeautySalonWebApplication.Controllers
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
 
-                    // Send confirmation email using EmailService
-                    await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", confirmationLink, user.FirstName);
+					// Send confirmation email using EmailService
+					await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", confirmationLink, user.FirstName);
                     // Redirect to registration confirmation page
                     return RedirectToAction("RegistrationConfirmation", "Account");
 
@@ -71,8 +56,8 @@ namespace BeautySalonWebApplication.Controllers
             return View(model);
         }
 
-// GET: Appointments
-public async Task<IActionResult> Index()
+        // GET: Appointments
+        public async Task<IActionResult> Index()
         {
             return View(await _context.Appointment.ToListAsync());
         }

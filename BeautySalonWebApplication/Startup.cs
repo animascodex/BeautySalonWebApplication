@@ -2,32 +2,18 @@
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
 using BeautySalonWebApplication.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
 using System.Net.Mail;
-
-
 
 namespace BeautySalonWebApplication
 {
-    public class Startup
-    {
-        private readonly IConfiguration _configuration;
-		private readonly SmtpSettings _smtpSettings;
-		private readonly ILogger<Startup> _logger;
-		private readonly IWebHostEnvironment _env;
-		public Startup(IConfiguration configuration, ILogger<Startup> logger, IWebHostEnvironment env)
-        {
-            _configuration = configuration;
-            _logger = logger;
-			_env = env;
-		}
-        public void ConfigureServices(IServiceCollection services)
+    public class Startup(IConfiguration configuration, IWebHostEnvironment env)
+	{
+        private readonly IConfiguration _configuration = configuration;
+		private readonly IWebHostEnvironment _env = env;
+
+		public void ConfigureServices(IServiceCollection services)
         {
             // Add Database context
             services.AddDbContext<ApplicationDbContext>(options =>

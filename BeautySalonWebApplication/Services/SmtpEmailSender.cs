@@ -1,12 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using BeautySalonWebApplication.Configuration;
-using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using BeautySalonWebApplication.Configuration;
 using Microsoft.Extensions.Options;
-using BeautySalonWebApplication.Models;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net.Mail;
 using System.Net;
 
@@ -23,7 +16,7 @@ namespace BeautySalonWebApplication.Services
 		private readonly SmtpSettings _smtpSettings;
         private readonly ILogger<SmtpEmailSender> _logger;
 
-		public SmtpEmailSender(IOptions<SmtpSettings> smtpSettings, SmtpClient smtpClient, ILogger<SmtpEmailSender> logger)
+		public SmtpEmailSender(IOptions<SmtpSettings> smtpSettings, ILogger<SmtpEmailSender> logger)
 		{
             _smtpSettings = smtpSettings.Value;
 			_logger = logger;
@@ -34,9 +27,7 @@ namespace BeautySalonWebApplication.Services
 				EnableSsl = _smtpSettings.EnableSsl,
 				Timeout = 10000
 			};
-			_logger.LogInformation("SMTP Settings: {Host}, {Port}, {Username}, {Password},{EnableSsl}", _smtpSettings.Host, _smtpSettings.Port, _smtpSettings.Username, _smtpSettings.Password, _smtpSettings.EnableSsl);
 		}
-		
 		public async Task SendEmailAsync(string email, string subject, string emailBody)
 		{
 			try
