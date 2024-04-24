@@ -12,7 +12,12 @@ using Microsoft.Extensions.Options;
 
 namespace BeautySalonWebApplication.Controllers
 {
-    public class AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager, IOptions<SmtpSettings> smtpSettings, ILogger<AppointmentsController> logger) : Controller
+    public class AppointmentsController(
+        ApplicationDbContext context, 
+        IEmailService emailService, 
+        UserManager<ApplicationUser> userManager, 
+        IOptions<SmtpSettings> smtpSettings, 
+        ILogger<AppointmentsController> logger) : Controller
     {
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -20,7 +25,39 @@ namespace BeautySalonWebApplication.Controllers
         private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
         private readonly ILogger<AppointmentsController> _logger = logger;
 
-		[HttpPost]
+
+        // POST: Users/ResetPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string userId, string newPassword)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(newPassword))
+            {
+                return BadRequest("User ID or new password is missing.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (result.Succeeded)
+            {
+                // Password reset successful
+                return Ok("Password reset successful.");
+            }
+            else
+            {
+                // Password reset failed
+                return BadRequest("Password reset failed.");
+            }
+        }
+
+        // POST: Users/Register and Email Confirmation
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {

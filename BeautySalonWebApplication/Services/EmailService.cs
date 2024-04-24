@@ -25,5 +25,22 @@ namespace BeautySalonWebApplication.Services
                 throw; // Optionally, rethrow the exception
             }
         }
+        public async Task SendConfirmationPasswordResetAsync(string email, string subject, string confirmationLink, string firstName)
+        {
+            // Read the template content from the file
+            string emailTemplatePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Areas", "Identity", "Pages", "Account", "EmailPasswordReset.cshtml");
+            string emailBody = await File.ReadAllTextAsync(emailTemplatePath);
+            emailBody = emailBody.Replace("@Model.FirstName", firstName);
+            emailBody = emailBody.Replace("@Model.ConfirmationLink", confirmationLink);
+            try
+            {
+                await _smtpEmailSender.SendEmailAsync(email, subject, emailBody);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending Password Reset email");
+                throw; // Optionally, rethrow the exception
+            }
+        }
 	}
 }

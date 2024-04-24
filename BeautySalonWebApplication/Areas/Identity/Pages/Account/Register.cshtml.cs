@@ -65,7 +65,6 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
         }
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            // Other code remains the same...
 
             if (ModelState.IsValid)
             {
