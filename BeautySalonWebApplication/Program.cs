@@ -1,18 +1,39 @@
 using BeautySalonWebApplication.Data;
-using Microsoft.AspNetCore.Identity;
+using BeautySalonWebApplication.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using BeautySalonWebApplication.Services;
+using BeautySalonWebApplication.Configuration;
+using System.Net.Mail;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// Add Identity services with custom ApplicationUser
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+{
+    // Configure identity options if needed
+    options.SignIn.RequireConfirmedAccount = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultUI();
+builder.Services.AddTransient<IEmailService, EmailService>();
+// Configure SmtpSettings options
+builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: true);
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+// Add SmtpEmailSender service
+builder.Services.AddTransient<ISmtpEmailSender, SmtpEmailSender>();
+builder.Services.AddTransient<IViewRenderService, ViewRenderService>();
+builder.Services.AddTransient<SmtpClient>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+
 
 var app = builder.Build();
 
@@ -33,6 +54,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

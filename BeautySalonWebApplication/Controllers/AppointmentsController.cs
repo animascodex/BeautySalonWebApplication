@@ -1,23 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BeautySalonWebApplication.Data;
 using BeautySalonWebApplication.Models;
-using Microsoft.AspNetCore.Authorization;
+using BeautySalonWebApplication.Services;
+using BeautySalonWebApplication.Configuration;
+using Microsoft.Extensions.Options;
+
+
 
 namespace BeautySalonWebApplication.Controllers
 {
-    public class AppointmentsController : Controller
+    public class AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager, IOptions<SmtpSettings> smtpSettings, ILogger<AppointmentsController> logger) : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context = context;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly IEmailService _emailService = emailService;
+        private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
+        private readonly ILogger<AppointmentsController> _logger = logger;
 
-        public AppointmentsController(ApplicationDbContext context)
+		[HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            _context = context;
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName
+                };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    // Generate confirmation link
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
+
+					// Send confirmation email using EmailService
+					await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", confirmationLink, user.FirstName);
+                    // Redirect to registration confirmation page
+                    return RedirectToAction("RegistrationConfirmation", "Account");
+
+                    
+
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            return View(model);
         }
 
         // GET: Appointments
@@ -67,6 +103,8 @@ namespace BeautySalonWebApplication.Controllers
         // POST: Appointments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,BookingTime,PhoneNumber")] Appointment appointment)
@@ -81,6 +119,7 @@ namespace BeautySalonWebApplication.Controllers
         }
 
         // GET: Appointments/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -101,6 +140,7 @@ namespace BeautySalonWebApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,BookingTime,PhoneNumber")] Appointment appointment)
         {
             if (id != appointment.Id)
@@ -132,6 +172,7 @@ namespace BeautySalonWebApplication.Controllers
         }
 
         // GET: Appointments/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -152,6 +193,7 @@ namespace BeautySalonWebApplication.Controllers
         // POST: Appointments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var appointment = await _context.Appointment.FindAsync(id);
