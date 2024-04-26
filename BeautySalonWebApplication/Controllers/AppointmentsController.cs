@@ -12,7 +12,12 @@ using Microsoft.Extensions.Options;
 
 namespace BeautySalonWebApplication.Controllers
 {
-    public class AppointmentsController(ApplicationDbContext context, IEmailService emailService, UserManager<ApplicationUser> userManager, IOptions<SmtpSettings> smtpSettings, ILogger<AppointmentsController> logger) : Controller
+    public class AppointmentsController(
+        ApplicationDbContext context, 
+        IEmailService emailService, 
+        UserManager<ApplicationUser> userManager, 
+        IOptions<SmtpSettings> smtpSettings, 
+        ILogger<AppointmentsController> logger) : Controller
     {
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -20,42 +25,8 @@ namespace BeautySalonWebApplication.Controllers
         private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
         private readonly ILogger<AppointmentsController> _logger = logger;
 
-		[HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName
-                };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    // Generate confirmation link
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
 
-					// Send confirmation email using EmailService
-					await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", confirmationLink, user.FirstName);
-                    // Redirect to registration confirmation page
-                    return RedirectToAction("RegistrationConfirmation", "Account");
-
-                    
-
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-            return View(model);
-        }
-
+        
         // GET: Appointments
         public async Task<IActionResult> Index()
         {

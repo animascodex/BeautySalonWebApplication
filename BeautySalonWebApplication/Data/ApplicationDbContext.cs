@@ -10,4 +10,5 @@ namespace BeautySalonWebApplication.Data
 		public override DbSet<ApplicationUser> Users {  get; set; }
         public DbSet<BeautySalonWebApplication.Models.Appointment> Appointment { get; set; } = default!;
     }
+
 }
