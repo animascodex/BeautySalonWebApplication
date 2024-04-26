@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using BeautySalonWebApplication.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,16 +15,20 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
 {
-    public class ResetPasswordModel(UserManager<ApplicationUser> userManager) : PageModel
+    public class ResetPasswordModel : PageModel
     {
-        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-		[BindProperty]
+        public ResetPasswordModel(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
+
+        [BindProperty]
         public InputModel Input { get; set; }
 
         public class InputModel
         {
-
             [Required]
             [EmailAddress]
             public string Email { get; set; }
@@ -35,7 +42,7 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-
+            [Required]
             public string Code { get; set; }
 
         }
@@ -73,8 +80,6 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
             var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
             if (result.Succeeded)
             {
-                // Password reset successful, redirect to confirmation page
-                TempData["SuccessMessage"] = "Your password has been successfully reset.";
                 return RedirectToPage("./ResetPasswordConfirmation");
             }
 

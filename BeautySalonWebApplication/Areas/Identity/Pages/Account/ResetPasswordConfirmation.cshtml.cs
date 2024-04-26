@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
 {
+
     [AllowAnonymous]
     public class ResetPasswordConfirmationModel : PageModel
     {

@@ -26,73 +26,7 @@ namespace BeautySalonWebApplication.Controllers
         private readonly ILogger<AppointmentsController> _logger = logger;
 
 
-        // POST: Users/ResetPassword
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(string userId, string newPassword)
-        {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(newPassword))
-            {
-                return BadRequest("User ID or new password is missing.");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-            if (result.Succeeded)
-            {
-                // Password reset successful
-                return Ok("Password reset successful.");
-            }
-            else
-            {
-                // Password reset failed
-                return BadRequest("Password reset failed.");
-            }
-        }
-
-        // POST: Users/Register and Email Confirmation
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName
-                };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    // Generate confirmation link
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
-
-					// Send confirmation email using EmailService
-					await _emailService.SendConfirmationEmailAsync(model.Email, "Confirm Your Email Address", confirmationLink, user.FirstName);
-                    // Redirect to registration confirmation page
-                    return RedirectToAction("RegistrationConfirmation", "Account");
-
-                    
-
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-            return View(model);
-        }
-
+        
         // GET: Appointments
         public async Task<IActionResult> Index()
         {

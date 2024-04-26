@@ -2,10 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using BeautySalonWebApplication.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -16,9 +21,9 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
     public class ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailService emailService) : PageModel
     {
         private readonly UserManager<ApplicationUser> _userManager = userManager;
-		private readonly IEmailService _emailService = emailService;
+        private readonly IEmailService _emailService = emailService;
 
-		[BindProperty]
+        [BindProperty]
         public InputModel Input { get; set; }
 
         public class InputModel
@@ -28,33 +33,37 @@ namespace BeautySalonWebApplication.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
 
-		public async Task<IActionResult> OnPostAsync()
-		{
-			if (!ModelState.IsValid)
-			{
-				return Page();
-			}
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(Input.Email);
+                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    // Don't reveal that the user does not exist or is not confirmed
+                    return RedirectToPage("./ForgotPasswordConfirmation");
+                }
 
-			var user = await _userManager.FindByEmailAsync(Input.Email);
-			if (user == null)
-			{
-				// Don't reveal that the user does not exist
-				return RedirectToPage("./ResetPasswordConfirmation");
-			}
-			// Generate confirmation token
-			var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-			var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                // For more information on how to enable account confirmation and password reset please
+                // visit https://go.microsoft.com/fwlink/?LinkID=532713
+                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ResetPassword",
+                    pageHandler: null,
+                    values: new { area = "Identity", code },
+                    protocol: Request.Scheme);
 
-			// Send confirmation email with token
-			var confirmationLink = Url.Page(
-				"/Account/ResetPassword",
-				pageHandler: null,
-				values: new { area = "Identity", userId = user.Id, code = token },
-				protocol: Request.Scheme);
+                await _emailService.SendConfirmationPasswordResetAsync(
+                    Input.Email,
+                    "Reset Your Password",
+                    callbackUrl,
+                    user.FirstName);
 
-			await _emailService.SendConfirmationPasswordResetAsync(Input.Email, "Reset Your Password", confirmationLink, user.FirstName);
+                return RedirectToPage("./ForgotPasswordConfirmation");
+            }
 
-			return RedirectToPage("./ResetPasswordConfirmation");
-		}
-	}
+            return Page();
+        }
+    }
 }
